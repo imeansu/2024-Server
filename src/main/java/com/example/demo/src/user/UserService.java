@@ -2,7 +2,6 @@ package com.example.demo.src.user;
 
 
 
-import com.example.demo.common.entity.BaseEntity.State;
 import com.example.demo.common.exceptions.BaseException;
 import com.example.demo.src.user.entity.User;
 import com.example.demo.src.user.model.*;
@@ -32,14 +31,14 @@ public class UserService {
     //POST
     public PostUserRes createUser(PostUserReq postUserReq) {
         //중복 체크
-        Optional<User> checkUser = userRepository.findByEmailAndState(postUserReq.getEmail(), ACTIVE);
-        if(checkUser.isPresent() == true){
+        Optional<User> checkUser = userRepository.findByLoginIdAndState(postUserReq.getLoginId(), ACTIVE);
+        if(checkUser.isPresent()){
             throw new BaseException(POST_USERS_EXISTS_EMAIL);
         }
 
         String encryptPwd;
         try {
-            encryptPwd = new SHA256().encrypt(postUserReq.getPassword());
+            encryptPwd = SHA256.encrypt(postUserReq.getPassword());
             postUserReq.setPassword(encryptPwd);
         } catch (Exception exception) {
             throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
@@ -81,7 +80,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<GetUserRes> getUsersByEmail(String email) {
-        List<GetUserRes> getUserResList = userRepository.findAllByEmailAndState(email, ACTIVE).stream()
+        List<GetUserRes> getUserResList = userRepository.findAllByLoginIdAndState(email, ACTIVE).stream()
                 .map(GetUserRes::new)
                 .collect(Collectors.toList());
         return getUserResList;
@@ -97,13 +96,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean checkUserByEmail(String email) {
-        Optional<User> result = userRepository.findByEmailAndState(email, ACTIVE);
+        Optional<User> result = userRepository.findByLoginIdAndState(email, ACTIVE);
         if (result.isPresent()) return true;
         return false;
     }
 
     public PostLoginRes logIn(PostLoginReq postLoginReq) {
-        User user = userRepository.findByEmailAndState(postLoginReq.getEmail(), ACTIVE)
+        User user = userRepository.findByLoginIdAndState(postLoginReq.getEmail(), ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
 
         String encryptPwd;
@@ -113,7 +112,7 @@ public class UserService {
             throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
         }
 
-        if(user.getPassword().equals(encryptPwd)){
+        if(user.getPasswordHash().equals(encryptPwd)){
             Long userId = user.getId();
             String jwt = jwtService.createJwt(userId);
             return new PostLoginRes(userId,jwt);
@@ -124,7 +123,7 @@ public class UserService {
     }
 
     public GetUserRes getUserByEmail(String email) {
-        User user = userRepository.findByEmailAndState(email, ACTIVE).orElseThrow(() -> new BaseException(NOT_FIND_USER));
+        User user = userRepository.findByLoginIdAndState(email, ACTIVE).orElseThrow(() -> new BaseException(NOT_FIND_USER));
         return new GetUserRes(user);
     }
 }

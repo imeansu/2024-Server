@@ -22,4 +22,6 @@ public class ExceptionAdvice {
         log.error("Exception has occured. ", exception);
         return new BaseResponse<>(BaseResponseStatus.UNEXPECTED_ERROR);
     }
+
+    // validation
 }

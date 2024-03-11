@@ -11,6 +11,7 @@ import com.example.demo.src.user.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,13 +41,13 @@ public class UserController {
     // Body
     @ResponseBody
     @PostMapping("")
-    public BaseResponse<PostUserRes> createUser(@RequestBody PostUserReq postUserReq) {
+    public BaseResponse<PostUserRes> createUser(@Valid @RequestBody PostUserReq postUserReq) {
         // TODO: email 관련한 짧은 validation 예시입니다. 그 외 더 부가적으로 추가해주세요!
-        if(postUserReq.getEmail() == null){
+        if(postUserReq.getLoginId() == null){
             return new BaseResponse<>(USERS_EMPTY_EMAIL);
         }
         //이메일 정규표현
-        if(!isRegexEmail(postUserReq.getEmail())){
+        if(!isRegexEmail(postUserReq.getLoginId())){
             return new BaseResponse<>(POST_USERS_INVALID_EMAIL);
         }
         PostUserRes postUserRes = userService.createUser(postUserReq);
