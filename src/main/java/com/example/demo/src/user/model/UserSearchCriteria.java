@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class UserSearchCriteria {
     private String name;
     private String loginId;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate createdAt;
     @EnumConstraint(message = "올바르지 않은 회원 상태입니다.", enumClass = UserStatus.class, nullable = true)
     private String userStatus;

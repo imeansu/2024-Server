@@ -33,6 +33,7 @@ public class Constant {
         RESTRICT_USER_BY_ADMIN,
         DEACTIVATE_USER_BY_ADMIN,
         SIGN_UP,
+        AGREE_TERMS, MODIFY_USER_NAME, LOGIN,
     }
 
     public enum EventType {

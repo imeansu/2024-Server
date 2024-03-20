@@ -2,46 +2,42 @@ package com.example.demo.common.history.entity;
 
 import com.example.demo.common.Constant.DataEvent;
 import com.example.demo.common.Constant.EventType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
 @Getter
-@Builder
-@Entity
-@Table(name = "data_history")
-public class DataHistory {
-
+@Document(collection = "data_history")
+public class DataHistory<T> {
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column
     private Long userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 128)
     private EventType eventType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 128)
     private DataEvent dataEvent;
 
-//    @Column(columnDefinition = "TEXT")
-//    private String data;
+    private T data;
 
-    @Column(columnDefinition = "TEXT")
     private String reason;
 
-    @CreationTimestamp
-    @Column(name = "createdAt", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @Builder
+    public DataHistory(Long userId, EventType eventType, DataEvent dataEvent, T data, String reason) {
+        this.userId = userId;
+        this.eventType = eventType;
+        this.dataEvent = dataEvent;
+        this.data = data;
+        this.reason = reason;
+        this.createdAt = LocalDateTime.now();
+    }
 }

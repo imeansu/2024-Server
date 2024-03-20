@@ -1,12 +1,11 @@
 package com.example.demo.src.user.service;
 
 
-
 import com.example.demo.common.Constant;
 import com.example.demo.common.Constant.*;
 import com.example.demo.common.exceptions.BaseException;
 import com.example.demo.common.exceptions.business.TermsNotAgreedException;
-import com.example.demo.common.history.DataHistoryRepository;
+import com.example.demo.common.history.DataHistoryService;
 import com.example.demo.common.history.entity.DataHistory;
 import com.example.demo.src.user.dto.PostUserDto;
 import com.example.demo.src.user.entity.TermsAgreement;
@@ -19,7 +18,7 @@ import com.example.demo.utils.JwtService;
 import com.example.demo.utils.SHA256;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +40,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserRepositorySupport userRepositorySupport;
     private final TermsAgreementRepository termsAgreementRepository;
-    private final DataHistoryRepository dataHistoryRepository;
+    private final DataHistoryService dataHistoryService;
     private final JwtService jwtService;
 
 
@@ -79,11 +78,12 @@ public class UserService {
         }
 
         User saveUser = userRepository.save(postUserDto.toEntity());
-//        logHistory(saveUser.getId(), EventType.USER, DataEvent.SIGN_UP, "sign up with " + );
+        logHistory(saveUser.getId(), EventType.USER, DataEvent.SIGN_UP, saveUser, "sign up");
 
         postUserDto.getTerms().forEach( termsType -> {
-            termsAgreementRepository.save(new TermsAgreement(saveUser, termsType));
-
+            TermsAgreement termsAgreement = new TermsAgreement(saveUser, termsType);
+            termsAgreementRepository.save(termsAgreement);
+            logHistory(termsAgreement.getUser().getId(), EventType.USER, DataEvent.AGREE_TERMS, termsAgreement, "agree terms");
         });
 
         return new PostUserRes(saveUser.getId());
@@ -93,12 +93,14 @@ public class UserService {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
         user.updateName(patchUserReq.getName());
+        logHistory(userId, EventType.USER, DataEvent.MODIFY_USER_NAME, user, "modify user name");
     }
 
     public void deleteUser(Long userId) {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
         user.deleteUser();
+        logHistory(userId, EventType.USER, DataEvent.DEACTIVATE_USER_BY_ADMIN, user, "deactivate user by admin");
     }
 
     @Transactional(readOnly = true)
@@ -159,14 +161,14 @@ public class UserService {
         Long userId = user.getId();
         String jwt = jwtService.createJwt(userId);
         user.updateLastLoginAt();
+        logHistory(userId, EventType.USER, DataEvent.LOGIN, user, "login");
         return new PostLoginRes(userId,jwt);
-
     }
 
-    public List<GetUserRes> searchUsers(UserSearchCriteria c, Pageable pageable) {
+    public List<GetUserRes> searchUsers(UserSearchCriteria c, PageRequest pageRequest) {
         UserStatus status = Constant.valueOfOrNull(UserStatus.class, c.getUserStatus());
 
-        Page<User> users = userRepositorySupport.searchUsers(c.getName(), c.getLoginId(), c.getCreatedAt(), status, pageable);
+        Page<User> users = userRepositorySupport.searchUsers(c.getName(), c.getLoginId(), c.getCreatedAt(), status, pageRequest);
         return users.stream().map(GetUserRes::new).collect(Collectors.toList());
     }
 
@@ -180,11 +182,12 @@ public class UserService {
         return new GetUserRes(user);
     }
 
-    private void logHistory(Long userId, EventType eventType, DataEvent dataEvent, String reason) {
-        dataHistoryRepository.save(DataHistory.builder()
+    private void logHistory(Long userId, EventType eventType, DataEvent dataEvent, Object data, String reason) {
+        dataHistoryService.save(DataHistory.builder()
                 .userId(userId)
                 .eventType(eventType)
                 .dataEvent(dataEvent)
+                .data(data)
                 .reason(reason)
                 .build());
     }

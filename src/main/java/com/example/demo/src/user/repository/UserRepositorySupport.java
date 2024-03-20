@@ -7,9 +7,11 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -29,13 +31,15 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
         this.queryFactory = queryFactory;
     }
 
-    public Page<User> searchUsers(String name, String loginId, LocalDate createdAt, UserStatus status, Pageable pageable) {
+    public Page<User> searchUsers(String name, String loginId, LocalDate createdAt, UserStatus status, PageRequest pageRequest) {
         Predicate datePredicate = null;
         if (createdAt != null) {
             LocalDateTime from = createdAt.atStartOfDay();
             LocalDateTime to = createdAt.atTime(23, 59, 59, 59);
             datePredicate = user.createdAt.between(from, to);
         }
+
+        PageRequest pageable = PageRequest.of(pageRequest.getPageNumber(), pageRequest.getPageSize(), Sort.by("id").descending());
 
         BooleanBuilder builder = new BooleanBuilder()
                 .and(eqName(name))

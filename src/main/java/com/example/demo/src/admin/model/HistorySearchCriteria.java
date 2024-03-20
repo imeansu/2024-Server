@@ -5,7 +5,7 @@ import com.example.demo.src.user.validation.EnumConstraint;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,6 +19,8 @@ public class HistorySearchCriteria {
     @EnumConstraint(message = "올바르지 않은 데이터 이벤트 타입입니다.", enumClass = Constant.DataEvent.class, nullable = true)
     private String dataEvent;
     private String reason;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdAt;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime startAt;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime endAt;
 }

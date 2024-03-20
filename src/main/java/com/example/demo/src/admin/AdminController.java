@@ -1,7 +1,9 @@
 package com.example.demo.src.admin;
 
+import com.example.demo.common.history.DataHistoryService;
 import com.example.demo.common.history.entity.DataHistory;
 import com.example.demo.common.history.model.GetDataHistoryRes;
+import com.example.demo.common.request.PageDto;
 import com.example.demo.common.response.BaseResponse;
 import com.example.demo.src.admin.model.AdminRequest;
 import com.example.demo.src.admin.model.HistorySearchCriteria;
@@ -10,7 +12,8 @@ import com.example.demo.src.user.model.UserSearchCriteria;
 import com.example.demo.src.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +27,7 @@ public class AdminController {
     private final UserService userService;
 
     private final AdminService adminService;
+    private final DataHistoryService dataHistoryService;
 
     /**
      * 유저 다건 조회 API
@@ -32,8 +36,8 @@ public class AdminController {
      */
     @ResponseBody
     @GetMapping("/users/search")
-    public BaseResponse<List<GetUserRes>> searchUsers(UserSearchCriteria userSearchCriteria, Pageable pageable) {
-        List<GetUserRes> getUsersRes = userService.searchUsers(userSearchCriteria, pageable);
+    public BaseResponse<List<GetUserRes>> searchUsers(UserSearchCriteria userSearchCriteria, PageDto pageDto) {
+        List<GetUserRes> getUsersRes = userService.searchUsers(userSearchCriteria, PageRequest.of(pageDto.getPage(), pageDto.getSize()));
         return new BaseResponse<>(getUsersRes);
     }
 
@@ -58,9 +62,9 @@ public class AdminController {
      * @return BaseResponse<List<DataHistory>>
      */
     @ResponseBody
-    @GetMapping("/history")
-    public BaseResponse<List<GetDataHistoryRes>> searchHistory(HistorySearchCriteria historySearchCriteria, Pageable pageable) {
-        List<GetDataHistoryRes> dataHistories = adminService.searchHistory(historySearchCriteria, pageable);
+    @GetMapping("/history/search")
+    public BaseResponse<List<GetDataHistoryRes>> searchHistory(HistorySearchCriteria historySearchCriteria, PageDto pageDto) {
+        List<GetDataHistoryRes> dataHistories = dataHistoryService.searchHistory(historySearchCriteria, PageRequest.of(pageDto.getPage(), pageDto.getSize()));
         return new BaseResponse<>(dataHistories);
     }
 

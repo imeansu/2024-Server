@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetDataHistoryRes {
-    private Long id;
+    private String id;
     private Long userId;
     private Constant.EventType eventType;
     private Constant.DataEvent dataEvent;
+    private Object data;
     private String reason;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -28,6 +29,7 @@ public class GetDataHistoryRes {
         this.userId = dataHistory.getUserId();
         this.eventType = dataHistory.getEventType();
         this.dataEvent = dataHistory.getDataEvent();
+        this.data = dataHistory.getData();
         this.reason = dataHistory.getReason();
         this.createdAt = dataHistory.getCreatedAt();
     }
