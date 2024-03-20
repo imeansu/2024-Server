@@ -13,4 +13,8 @@ public class BaseException extends RuntimeException {
         super(status.getMessage());
         this.status = status;
     }
+
+    public <T> T getResult() {
+        return null;
+    }
 }

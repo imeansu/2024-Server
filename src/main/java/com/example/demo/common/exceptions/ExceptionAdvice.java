@@ -25,8 +25,11 @@ import java.util.stream.Collectors;
 public class ExceptionAdvice {
 
     @ExceptionHandler(BaseException.class)
-    public BaseResponse<BaseResponseStatus> BaseExceptionHandle(BaseException exception) {
+    public <T extends BaseException> BaseResponse<BaseResponseStatus> BaseExceptionHandle(T exception) {
         log.warn("BaseException. error message: {}", exception.getMessage());
+        if (exception.getResult() != null) {
+            return new BaseResponse<>(exception.getStatus(), exception.getResult());
+        }
         return new BaseResponse<>(exception.getStatus());
     }
 

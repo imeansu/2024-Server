@@ -1,5 +1,7 @@
 package com.example.demo.src.user.model;
 
+import com.example.demo.common.Constant;
+import com.example.demo.common.Constant.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

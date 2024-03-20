@@ -22,19 +22,30 @@ public enum BaseResponseStatus {
     TEST_EMPTY_COMMENT(false, HttpStatus.BAD_REQUEST.value(), "코멘트를 입력해주세요."),
     POST_USERS_INVALID_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이메일 형식을 확인해주세요."),
     POST_USERS_EXISTS_EMAIL(false,HttpStatus.BAD_REQUEST.value(),"중복된 이메일입니다."),
+    POST_SOCIAL_LOGIN_USERS_EXISTS(false,HttpStatus.BAD_REQUEST.value(),"중복된 소셜 로그인 유저입니다."),
     POST_TEST_EXISTS_MEMO(false,HttpStatus.BAD_REQUEST.value(),"중복된 메모입니다."),
 
     RESPONSE_ERROR(false, HttpStatus.NOT_FOUND.value(), "값을 불러오는데 실패하였습니다."),
 
     DUPLICATED_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "중복된 이메일입니다."),
+    INVALID_TERMS_AGREEMENT(false, HttpStatus.BAD_REQUEST.value(), "약관 동의가 필요합니다."),
+    INVALID_SOCIAL_LOGIN_TOKEN(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 소셜 로그인 토큰입니다."),
     INVALID_MEMO(false,HttpStatus.NOT_FOUND.value(), "존재하지 않는 메모입니다."),
     FAILED_TO_LOGIN(false,HttpStatus.NOT_FOUND.value(),"없는 아이디거나 비밀번호가 틀렸습니다."),
     EMPTY_JWT(false, HttpStatus.UNAUTHORIZED.value(), "JWT를 입력해주세요."),
     INVALID_JWT(false, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 JWT입니다."),
     INVALID_USER_JWT(false,HttpStatus.FORBIDDEN.value(),"권한이 없는 유저의 접근입니다."),
     NOT_FIND_USER(false,HttpStatus.NOT_FOUND.value(),"일치하는 유저가 없습니다."),
+    SOCIAL_LOGIN_USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "소셜 로그인 유저를 찾을 수 없습니다."),
     INVALID_OAUTH_TYPE(false, HttpStatus.BAD_REQUEST.value(), "알 수 없는 소셜 로그인 형식입니다."),
 
+
+    /**
+     * 4000 : Business 관련 오류
+     */
+    CAN_NOT_LOGIN_USER(false, 4001,"로그인할 수 없는 계정입니다."),
+    DORMANT_USER(false, 4002, "휴면 계정입니다."),
+    RESTRICTED_USER(false, 4003, "차단된 계정입니다."),
 
 
     /**

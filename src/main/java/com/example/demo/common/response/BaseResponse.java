@@ -34,5 +34,13 @@ public class BaseResponse<T> {
         this.code = status.getCode();
     }
 
+    // 요청 실패 결과 전달할 경우
+    public BaseResponse(BaseResponseStatus status, T result) {
+        this.isSuccess = status.isSuccess();
+        this.message = status.getMessage();
+        this.code = status.getCode();
+        this.result = result;
+    }
+
 }
 

@@ -17,20 +17,25 @@ spring:
     init:
       platform: mysql
   datasource:
-    url: jdbc:mysql://localhost:3306/demo?autoReconnect=true&setTimezone=Asia/Seoul # 변경해주세요
+    url: jdbc:mysql://localhost:3306/demo?autoReconnect=true&serverTimezone=UTC&useUnicode=true # 변경해주세요
     username: root # username
     password: password # password
     driver-class-name: com.mysql.cj.jdbc.Driver # mysql 8버전
     # driver-class-name: com.mysql.jdbc.Driver # mysql 5버전
+    hikari:
+      connectionTimeout: 30000
+      idleTimeout: 600000
+      maxLifetime: 1800000
   OAuth2:
-    google:
-      url: https://accounts.google.com/o/oauth2/v2/auth
-      client-id: # client-id
+    kakao:
+      url: https://kauth.kakao.com/oauth/authorize
+      client-id: 44a90896f3ee78d0e03712d6cd025cfd
       client-secret:  # client-secret
-      callback-login-url: http://localhost:9000/app/users/auth/google/login/callback # 등록한 정보에 맞게 수정해주세요
-      scope: https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile # 등록한 정보에 맞게 수정해주세요
+      callback-login-url: http://localhost:3000/login/kakao
+      token-request-url: https://kauth.kakao.com/oauth/token
+      user-info-request-url: https://kapi.kakao.com/v2/user/me
+      scope: account_email
 
-spring.sql.init.platform: mysql
 server:
   port: 9000
 
@@ -58,7 +63,7 @@ spring:
     activate:
       on-profile: "prod"
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: com.example.demo.common.config.CustomMySQLDialect
     hibernate:
       ddl-auto: none
       # create, update, create-drop, none 등의 옵션이 있습니다.
@@ -82,7 +87,7 @@ spring:
     activate:
       on-profile: "dev"
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: com.example.demo.common.config.CustomMySQLDialect
     hibernate:
       ddl-auto: create-drop
       naming:
@@ -92,4 +97,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: ALWAYS

@@ -1,14 +1,15 @@
 package com.example.demo.src.user.entity;
 
-import com.example.demo.common.Constant;
 import com.example.demo.common.Constant.SocialLoginType;
+import com.example.demo.common.Constant.UserStatus;
 import com.example.demo.common.entity.BaseEntity;
+import com.example.demo.common.exceptions.BaseException;
+import com.example.demo.common.response.BaseResponseStatus;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-
-import static com.example.demo.common.Constant.SocialLoginType.KAKAO;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(callSuper = false)
@@ -36,7 +37,10 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private SocialLoginType oauthType;
+    private SocialLoginType socialLoginType;
+
+    @Column
+    private String oauthId;
 
     @Column(nullable = false, length = 12)
     private String phoneNumber;
@@ -44,24 +48,70 @@ public class User extends BaseEntity {
     @Column
     private LocalDate birthday;
 
+    @Column(nullable = false)
+    private Integer userStatus;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime lastLoginAt;
+
     @Builder
-    public User(Long id, String loginId, String passwordHash, boolean isOAuth, SocialLoginType oauthType, String name, String phoneNumber, LocalDate birthday) {
+    public User(Long id, String loginId, String passwordHash, boolean isOAuth, SocialLoginType socialLoginType, String oauthId, String name, String phoneNumber, LocalDate birthday, Integer userStatus) {
         this.id = id;
         this.loginId = loginId;
         this.passwordHash = passwordHash;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.isOAuth = isOAuth;
-        this.oauthType = oauthType;
+        this.socialLoginType = socialLoginType;
+        this.oauthId = oauthId;
         this.birthday = birthday;
+        this.userStatus = userStatus;
     }
 
     public void updateName(String username) {
         this.name = username;
     }
 
+    public void updateLastLoginAt() {
+        this.lastLoginAt = LocalDateTime.now();
+    }
+
     public void deleteUser() {
         this.state = State.INACTIVE;
+    }
+
+    public void setUserStatus(UserStatus status) {
+        if (userStatus == null) {
+            userStatus = status.getValue();
+        } else {
+            userStatus |= status.getValue();
+        }
+    }
+
+    public void clearUserStatus(UserStatus status) {
+        if (userStatus != null) {
+            userStatus &= ~status.getValue();
+        }
+    }
+
+    public boolean hasUserStatus(UserStatus status) {
+        return userStatus != null && (userStatus & status.getValue()) != 0;
+    }
+
+    public boolean canLogin() {
+        if (state != State.ACTIVE) {
+            throw new BaseException(BaseResponseStatus.NOT_FIND_USER);
+        }
+
+        if (hasUserStatus(UserStatus.DORMANCY)) {
+            throw new BaseException(BaseResponseStatus.DORMANT_USER);
+        }
+
+        if (hasUserStatus(UserStatus.RESTRICTED)) {
+            throw new BaseException(BaseResponseStatus.RESTRICTED_USER);
+        }
+
+        return true;
     }
 
 }
