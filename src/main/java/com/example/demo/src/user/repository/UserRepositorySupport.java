@@ -2,6 +2,7 @@ package com.example.demo.src.user.repository;
 
 import com.example.demo.common.Constant.UserStatus;
 import com.example.demo.src.user.entity.User;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -36,13 +37,15 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
             datePredicate = user.createdAt.between(from, to);
         }
 
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(eqName(name))
+                .and(eqLoginId(loginId))
+                .and(eqUserStatus(status))
+                .and(datePredicate);
+
         List<User> users = queryFactory
                 .selectFrom(user)
-                .where(eqName(name),
-                        eqLoginId(loginId),
-                        eqUserStatus(status),
-                        datePredicate
-                )
+                .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(user.id.desc())
@@ -51,11 +54,7 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
         long totalCount = queryFactory
                 .select(user.count())
                 .from(user)
-                .where(eqName(name),
-                        eqLoginId(loginId),
-                        eqUserStatus(status),
-                        datePredicate
-                )
+                .where(builder)
                 .fetchOne();
 
         return new PageImpl<>(users, pageable, totalCount);

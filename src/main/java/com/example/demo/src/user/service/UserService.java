@@ -3,11 +3,11 @@ package com.example.demo.src.user.service;
 
 
 import com.example.demo.common.Constant;
-import com.example.demo.common.Constant.SocialLoginType;
-import com.example.demo.common.Constant.TermsType;
-import com.example.demo.common.Constant.UserStatus;
+import com.example.demo.common.Constant.*;
 import com.example.demo.common.exceptions.BaseException;
 import com.example.demo.common.exceptions.business.TermsNotAgreedException;
+import com.example.demo.common.history.DataHistoryRepository;
+import com.example.demo.common.history.entity.DataHistory;
 import com.example.demo.src.user.dto.PostUserDto;
 import com.example.demo.src.user.entity.TermsAgreement;
 import com.example.demo.src.user.entity.User;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +39,9 @@ import static com.example.demo.common.response.BaseResponseStatus.*;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final TermsAgreementRepository termsAgreementRepository;
     private final UserRepositorySupport userRepositorySupport;
+    private final TermsAgreementRepository termsAgreementRepository;
+    private final DataHistoryRepository dataHistoryRepository;
     private final JwtService jwtService;
 
 
@@ -79,20 +79,14 @@ public class UserService {
         }
 
         User saveUser = userRepository.save(postUserDto.toEntity());
+//        logHistory(saveUser.getId(), EventType.USER, DataEvent.SIGN_UP, "sign up with " + );
 
-        postUserDto.getTerms().forEach(termsType -> termsAgreementRepository.save(new TermsAgreement(saveUser, termsType)));
+        postUserDto.getTerms().forEach( termsType -> {
+            termsAgreementRepository.save(new TermsAgreement(saveUser, termsType));
+
+        });
 
         return new PostUserRes(saveUser.getId());
-
-    }
-
-    public PostUserRes createOAuthUser(User user) {
-        User saveUser = userRepository.save(user);
-
-        // JWT 발급
-        String jwtToken = jwtService.createJwt(saveUser.getId());
-        return new PostUserRes(saveUser.getId(), jwtToken);
-
     }
 
     public void modifyUserName(Long userId, PatchUserReq patchUserReq) {
@@ -170,10 +164,7 @@ public class UserService {
     }
 
     public List<GetUserRes> searchUsers(UserSearchCriteria c, Pageable pageable) {
-        UserStatus status = null;
-        if (c.getUserStatus() != null) {
-            status = UserStatus.valueOf(c.getUserStatus());
-        }
+        UserStatus status = Constant.valueOfOrNull(UserStatus.class, c.getUserStatus());
 
         Page<User> users = userRepositorySupport.searchUsers(c.getName(), c.getLoginId(), c.getCreatedAt(), status, pageable);
         return users.stream().map(GetUserRes::new).collect(Collectors.toList());
@@ -187,6 +178,15 @@ public class UserService {
     public GetUserRes getUserByOauthId(SocialLoginType socialLoginType, String oauthId) {
         User user = userRepository.findBySocialLoginTypeAndOauthIdAndState(socialLoginType, oauthId, ACTIVE).orElseThrow(() -> new BaseException(NOT_FIND_USER));
         return new GetUserRes(user);
+    }
+
+    private void logHistory(Long userId, EventType eventType, DataEvent dataEvent, String reason) {
+        dataHistoryRepository.save(DataHistory.builder()
+                .userId(userId)
+                .eventType(eventType)
+                .dataEvent(dataEvent)
+                .reason(reason)
+                .build());
     }
 
 }

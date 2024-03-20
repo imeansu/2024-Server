@@ -31,12 +31,21 @@ public class Constant {
 
     public enum DataEvent {
         RESTRICT_USER_BY_ADMIN,
-        DEACTIVATE_USER_BY_ADMIN
+        DEACTIVATE_USER_BY_ADMIN,
+        SIGN_UP,
     }
 
     public enum EventType {
         USER,
         ADMIN
+    }
+
+    public static <T extends Enum<T>> T valueOfOrNull(Class<T> enumType, String value) {
+        try {
+            return Enum.valueOf(enumType, value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
 
