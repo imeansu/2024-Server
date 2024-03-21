@@ -1,6 +1,9 @@
 package com.example.demo.common.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -22,5 +25,15 @@ public class WebConfig implements WebMvcConfigurer {
                 // 자격증명 사용을 허용한다.
                 // 해당 옵션 사용시 allowedOrigins를 * (전체)로 설정할 수 없다.
                 .allowCredentials(true);
+    }
+
+    @Bean
+    public WebMvcConfigurer customConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+                configurer.defaultContentType(MediaType.APPLICATION_JSON);
+            }
+        };
     }
 }

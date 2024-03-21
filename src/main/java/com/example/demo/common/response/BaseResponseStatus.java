@@ -21,7 +21,8 @@ public enum BaseResponseStatus {
     USERS_EMPTY_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이메일을 입력해주세요."),
     TEST_EMPTY_COMMENT(false, HttpStatus.BAD_REQUEST.value(), "코멘트를 입력해주세요."),
     POST_USERS_INVALID_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이메일 형식을 확인해주세요."),
-    POST_USERS_EXISTS_EMAIL(false,HttpStatus.BAD_REQUEST.value(),"중복된 이메일입니다."),
+    POST_USERS_EXISTS_LOGIN_ID(false,HttpStatus.BAD_REQUEST.value(),"중복된 이메일입니다."),
+    POST_USERS_EXISTS_PHONE_NUMBER(false,HttpStatus.BAD_REQUEST.value(),"중복된 전화번호입니다."),
     POST_SOCIAL_LOGIN_USERS_EXISTS(false,HttpStatus.BAD_REQUEST.value(),"중복된 소셜 로그인 유저입니다."),
     POST_TEST_EXISTS_MEMO(false,HttpStatus.BAD_REQUEST.value(),"중복된 메모입니다."),
 
@@ -34,6 +35,7 @@ public enum BaseResponseStatus {
     FAILED_TO_LOGIN(false,HttpStatus.NOT_FOUND.value(),"없는 아이디거나 비밀번호가 틀렸습니다."),
     EMPTY_JWT(false, HttpStatus.UNAUTHORIZED.value(), "JWT를 입력해주세요."),
     INVALID_JWT(false, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 JWT입니다."),
+    INVALID_OTP(false, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 OTP입니다."),
     INVALID_USER_JWT(false,HttpStatus.FORBIDDEN.value(),"권한이 없는 유저의 접근입니다."),
     NOT_FIND_USER(false,HttpStatus.NOT_FOUND.value(),"일치하는 유저가 없습니다."),
     SOCIAL_LOGIN_USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "소셜 로그인 유저를 찾을 수 없습니다."),

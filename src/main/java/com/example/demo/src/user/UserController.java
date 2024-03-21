@@ -1,22 +1,20 @@
 package com.example.demo.src.user;
 
 
-import com.example.demo.common.entity.BaseEntity;
+import com.example.demo.common.exceptions.BaseException;
+import com.example.demo.common.response.BaseResponse;
+import com.example.demo.src.user.dto.OtpReqDto;
 import com.example.demo.src.user.entity.User;
+import com.example.demo.src.user.model.*;
 import com.example.demo.src.user.service.UserService;
 import com.example.demo.utils.JwtService;
 import lombok.RequiredArgsConstructor;
-import com.example.demo.common.exceptions.BaseException;
-import com.example.demo.common.response.BaseResponse;
-import com.example.demo.src.user.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
-
 
 import static com.example.demo.common.response.BaseResponseStatus.*;
 import static com.example.demo.utils.ValidationRegex.isRegexEmail;
@@ -98,7 +96,7 @@ public class UserController {
     @GetMapping("/checkLoginId/{loginId}") // (GET) 127.0.0.1:9000/app/users/:userId
     public BaseResponse checkLoginId(@PathVariable("loginId") String loginId) {
         if (userService.checkUserByEmail(loginId)) {
-            throw new BaseException(POST_USERS_EXISTS_EMAIL);
+            throw new BaseException(POST_USERS_EXISTS_LOGIN_ID);
         }
         // 일단 그냥 SUCCESS 로 리턴
         return new BaseResponse<>(SUCCESS);
@@ -150,4 +148,61 @@ public class UserController {
         return new BaseResponse<>(postLoginRes);
     }
 
+    /**
+     * 비번 찾기 OTP 발급 API
+     * [POST] /app/users/password/otp
+     * @return BaseResponse<OtpRes>
+     */
+    @ResponseBody
+    @PostMapping("/password/otp")
+    public BaseResponse<String> createOtp(@RequestBody OtpReq otpReq, HttpServletRequest request){
+        User user = userService.getUserByPhoneNumberAndName(otpReq.getPhoneNumber(), otpReq.getName()).orElseThrow(
+                () -> new BaseException(NOT_FIND_USER)
+        );
+        OtpInfo otpInfo = userService.createOtp(otpReq.toDto(user.getId()));
+        String result = "OTP 발송 완료!!";
+        request.getSession().setAttribute("otpInfo", otpInfo);
+        return new BaseResponse<>(result);
+    }
+
+    /**
+     * 비번 찾기 OTP 확인 API
+     * [POST] /app/users/password/otp/verify
+     * @return BaseResponse<OtpVerifyRes>
+     */
+    @ResponseBody
+    @PostMapping("/password/otp/verify")
+    public BaseResponse<String> verifyOtp(@RequestBody OtpVerityReq otpVerityReq, HttpServletRequest request){
+        OtpInfo otpInfo = (OtpInfo) request.getSession().getAttribute("otpInfo");
+        if (otpInfo == null) {
+            throw new BaseException(INVALID_OTP);
+        }
+
+        OtpInfo result = userService.verifyOtp(otpVerityReq, otpInfo);
+        request.getSession().setAttribute("otpInfo", result);
+        if (result.isSuccess()) {
+            return new BaseResponse<>(SUCCESS);
+        }
+        return new BaseResponse<>(INVALID_OTP);
+    }
+
+    /**
+     * 비번 변경 API
+     * [POST] /app/users/password/reset
+     * @return BaseResponse<OtpVerifyRes>
+     */
+    @ResponseBody
+    @PostMapping("/password/reset")
+    public BaseResponse<String> resetPassword(@RequestBody PasswordResetReq passwordResetReq, HttpServletRequest request){
+        OtpInfo otpInfo = (OtpInfo) request.getSession().getAttribute("otpInfo");
+        if (otpInfo == null) {
+            throw new BaseException(INVALID_OTP);
+        }
+
+        userService.resetPassword(otpInfo, passwordResetReq.getPassword());
+        request.getSession().removeAttribute("otpInfo");
+
+        String result = "비밀번호 변경 완료!!";
+        return new BaseResponse<>(result);
+    }
 }

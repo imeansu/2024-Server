@@ -3,29 +3,16 @@ package com.example.demo.src.admin;
 
 import com.example.demo.common.Constant;
 import com.example.demo.common.Constant.DataEvent;
-import com.example.demo.common.Constant.EventType;
 import com.example.demo.common.exceptions.BaseException;
-//import com.example.demo.common.history.DataHistoryRepository;
-//import com.example.demo.common.history.DataHistoryRepositorySupport;
 import com.example.demo.common.history.DataHistoryService;
 import com.example.demo.common.history.entity.DataHistory;
-import com.example.demo.common.history.model.GetDataHistoryRes;
 import com.example.demo.src.admin.model.AdminRequest;
-import com.example.demo.src.admin.model.HistorySearchCriteria;
 import com.example.demo.src.user.entity.User;
 import com.example.demo.src.user.repository.UserRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.example.demo.common.Constant.EventType.ADMIN;
 import static com.example.demo.common.entity.BaseEntity.State.ACTIVE;

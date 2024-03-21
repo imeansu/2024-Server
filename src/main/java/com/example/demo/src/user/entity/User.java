@@ -54,6 +54,9 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime lastLoginAt;
 
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime lastLawNotifiedAt;
+
     @Builder
     public User(Long id, String loginId, String passwordHash, boolean isOAuth, SocialLoginType socialLoginType, String oauthId, String name, String phoneNumber, LocalDate birthday, Integer userStatus) {
         this.id = id;
@@ -66,14 +69,22 @@ public class User extends BaseEntity {
         this.oauthId = oauthId;
         this.birthday = birthday;
         this.userStatus = userStatus;
+        this.lastLawNotifiedAt = LocalDateTime.now();
     }
 
     public void updateName(String username) {
         this.name = username;
     }
 
+    public void resetPassword(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public void updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
+    }
+    public void updateLastLawNotifiedAt() {
+        this.lastLawNotifiedAt = LocalDateTime.now();
     }
 
     public void deleteUser() {

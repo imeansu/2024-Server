@@ -7,7 +7,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +61,13 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
                 .fetchOne();
 
         return new PageImpl<>(users, pageable, totalCount);
+    }
+
+    public List<User> getLastLawNotifiedUsersBefore(LocalDateTime currentDateTime) {
+        return queryFactory
+                .selectFrom(user)
+                .where(user.lastLawNotifiedAt.before(currentDateTime))
+                .fetch();
     }
 
     private BooleanExpression eqName(String name) {

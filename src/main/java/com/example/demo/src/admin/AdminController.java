@@ -1,7 +1,6 @@
 package com.example.demo.src.admin;
 
 import com.example.demo.common.history.DataHistoryService;
-import com.example.demo.common.history.entity.DataHistory;
 import com.example.demo.common.history.model.GetDataHistoryRes;
 import com.example.demo.common.request.PageDto;
 import com.example.demo.common.response.BaseResponse;
@@ -12,7 +11,6 @@ import com.example.demo.src.user.model.UserSearchCriteria;
 import com.example.demo.src.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 

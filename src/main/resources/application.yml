@@ -1,8 +1,8 @@
 spring:
   profiles:
     group: # Run - Edit Configurations - Active Profiles에서 설정
-      dev: common, dev
-      prod: common, prod
+      dev: common, dev, demo, batch
+      prod: common, prod, batch
 ---
 spring:
   config:
@@ -61,6 +61,11 @@ springdoc:
 
 jwt:
   secret-key: UwKYibQQgkW7g-*k.ap9kje-wxBHb9wdXoBT4vnt4P3sJWt-Nu  # JWT key. 수정해주세요
+
+twilio:
+  account_sid: 1*****
+  auth_token: 2*****
+  trial_number: 3*****
 
 ---
 spring:

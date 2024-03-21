@@ -7,6 +7,8 @@ import com.example.demo.common.exceptions.BaseException;
 import com.example.demo.common.exceptions.business.TermsNotAgreedException;
 import com.example.demo.common.history.DataHistoryService;
 import com.example.demo.common.history.entity.DataHistory;
+import com.example.demo.common.service.OtpService;
+import com.example.demo.src.user.dto.OtpReqDto;
 import com.example.demo.src.user.dto.PostUserDto;
 import com.example.demo.src.user.entity.TermsAgreement;
 import com.example.demo.src.user.entity.User;
@@ -17,11 +19,13 @@ import com.example.demo.src.user.repository.UserRepositorySupport;
 import com.example.demo.utils.JwtService;
 import com.example.demo.utils.SHA256;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +36,7 @@ import static com.example.demo.common.entity.BaseEntity.State.ACTIVE;
 import static com.example.demo.common.response.BaseResponseStatus.*;
 
 // Service Create, Update, Delete 의 로직 처리
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 @Service
@@ -42,14 +47,21 @@ public class UserService {
     private final TermsAgreementRepository termsAgreementRepository;
     private final DataHistoryService dataHistoryService;
     private final JwtService jwtService;
+    private final OtpService otpService;
 
 
     //POST
     public PostUserRes createUser(PostUserDto postUserDto) {
         //중복 체크
-        Optional<User> checkUser = userRepository.findByLoginIdAndState(postUserDto.getLoginId(), ACTIVE);
-        if(checkUser.isPresent()){
-            throw new BaseException(POST_USERS_EXISTS_EMAIL);
+        Optional<User> checkLoginIdUser = userRepository.findByLoginIdAndState(postUserDto.getLoginId(), ACTIVE);
+        if(checkLoginIdUser.isPresent()){
+            throw new BaseException(POST_USERS_EXISTS_LOGIN_ID);
+        }
+
+        // 정책 추가: PhoneNumber 중복 불가
+        Optional<User> checkPhoneNumberUser = userRepository.findByPhoneNumberAndState(postUserDto.getPhoneNumber(), ACTIVE);
+        if(checkPhoneNumberUser.isPresent()){
+            throw new BaseException(POST_USERS_EXISTS_LOGIN_ID);
         }
 
         // 소셜 로그인 중복 체크
@@ -94,6 +106,20 @@ public class UserService {
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
         user.updateName(patchUserReq.getName());
         logHistory(userId, EventType.USER, DataEvent.MODIFY_USER_NAME, user, "modify user name");
+    }
+
+    public void resetPassword(OtpInfo otpInfo, String password) {
+        User user = userRepository.findByIdAndState(otpInfo.getUserId(), ACTIVE)
+                .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+
+        String encryptPwd;
+        try {
+            encryptPwd = SHA256.encrypt(password);
+        } catch (Exception exception) {
+            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+        }
+        user.resetPassword(encryptPwd);
+        logHistory(otpInfo.getUserId(), EventType.USER, DataEvent.RESET_PASSWORD, user, "reset password");
     }
 
     public void deleteUser(Long userId) {
@@ -141,6 +167,11 @@ public class UserService {
         return false;
     }
 
+    @Transactional(readOnly = true)
+    public Optional<User> getUserByPhoneNumberAndName(String phoneNumber, String name) {
+        return userRepository.findByPhoneNumberAndNameAndState(phoneNumber, name, ACTIVE);
+    }
+
     public PostLoginRes logIn(PostLoginReq postLoginReq) {
         User user = userRepository.findByLoginIdAndState(postLoginReq.getLoginId(), ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
@@ -182,6 +213,29 @@ public class UserService {
         return new GetUserRes(user);
     }
 
+    public OtpInfo createOtp(OtpReqDto otpReqDto) {
+        OtpInfo otpInfo = otpService.generateOtp(otpReqDto);
+        logHistory(null, EventType.USER, DataEvent.CREATE_OTP, otpInfo, "create otp for password reset");
+        return otpInfo;
+    }
+
+    public OtpInfo verifyOtp(OtpVerityReq otpVerityReq, OtpInfo otpInfo) {
+        OtpInfo cacheOtp = otpService.getCacheOtp(otpInfo.getPhoneNumber());
+        if (cacheOtp.getOtp().equals(otpVerityReq.getOtp())) {
+            otpService.clearOtp(otpInfo.getPhoneNumber());
+            cacheOtp.setSuccess(true);
+            logHistory(null, EventType.USER, DataEvent.VERIFY_OTP_SUCESS, otpInfo, "verify otp for password reset success");
+            return cacheOtp;
+        }
+
+        logHistory(null, EventType.USER, DataEvent.VERIFY_OTP_FAIL, otpInfo, "verify otp for password reset fail");
+        return cacheOtp;
+    }
+
+    public List<User> getNeedLawNotifyUsers(LocalDateTime now) {
+        return userRepositorySupport.getLastLawNotifiedUsersBefore(now);
+    }
+
     private void logHistory(Long userId, EventType eventType, DataEvent dataEvent, Object data, String reason) {
         dataHistoryService.save(DataHistory.builder()
                 .userId(userId)
@@ -191,5 +245,4 @@ public class UserService {
                 .reason(reason)
                 .build());
     }
-
 }
