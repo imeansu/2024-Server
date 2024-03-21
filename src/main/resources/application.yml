@@ -60,7 +60,7 @@ springdoc:
     - /**
 
 jwt:
-  secret-key: UwKYibQQgkW7g-*k.ap9kje-wxBHb9wdXoBT4vnt4P3sJWt-Nu  # JWT key. 수정해주세요
+  secret-key:
 
 twilio:
   account_sid: 1*****
@@ -99,7 +99,7 @@ spring:
   jpa:
     database-platform: com.example.demo.common.config.CustomMySQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     generate-ddl: false

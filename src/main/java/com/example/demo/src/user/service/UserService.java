@@ -61,7 +61,7 @@ public class UserService {
         // 정책 추가: PhoneNumber 중복 불가
         Optional<User> checkPhoneNumberUser = userRepository.findByPhoneNumberAndState(postUserDto.getPhoneNumber(), ACTIVE);
         if(checkPhoneNumberUser.isPresent()){
-            throw new BaseException(POST_USERS_EXISTS_LOGIN_ID);
+            throw new BaseException(POST_USERS_EXISTS_PHONE_NUMBER);
         }
 
         // 소셜 로그인 중복 체크
@@ -104,6 +104,9 @@ public class UserService {
     public void modifyUserName(Long userId, PatchUserReq patchUserReq) {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+
+        checkUserStatus(user);
+
         user.updateName(patchUserReq.getName());
         logHistory(userId, EventType.USER, DataEvent.MODIFY_USER_NAME, user, "modify user name");
     }
@@ -111,6 +114,8 @@ public class UserService {
     public void resetPassword(OtpInfo otpInfo, String password) {
         User user = userRepository.findByIdAndState(otpInfo.getUserId(), ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+
+        checkUserStatus(user);
 
         String encryptPwd;
         try {
@@ -138,7 +143,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetUserRes> getUsersByEmail(String email) {
+    public List<GetUserRes> getUsersByLoginId(String email) {
         List<GetUserRes> getUserResList = userRepository.findAllByLoginIdAndState(email, ACTIVE).stream()
                 .map(GetUserRes::new)
                 .collect(Collectors.toList());
@@ -150,7 +155,15 @@ public class UserService {
     public GetUserRes getUser(Long userId) {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+        checkUserStatus(user);
         return new GetUserRes(user);
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserDetailRes getUserDetail(Long userId) {
+        User user = userRepository.findByIdAndState(userId, ACTIVE)
+                .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+        return new GetUserDetailRes(user);
     }
 
     @Transactional(readOnly = true)
@@ -168,8 +181,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserByPhoneNumberAndName(String phoneNumber, String name) {
-        return userRepository.findByPhoneNumberAndNameAndState(phoneNumber, name, ACTIVE);
+    public User getUserByPhoneNumberAndName(String phoneNumber, String name) {
+        User user = userRepository.findByPhoneNumberAndNameAndState(phoneNumber, name, ACTIVE).orElseThrow(
+                () -> new BaseException(NOT_FIND_USER)
+        );
+        checkUserStatus(user);
+        return user;
     }
 
     public PostLoginRes logIn(PostLoginReq postLoginReq) {
@@ -234,6 +251,10 @@ public class UserService {
 
     public List<User> getNeedLawNotifyUsers(LocalDateTime now) {
         return userRepositorySupport.getLastLawNotifiedUsersBefore(now);
+    }
+
+    public void checkUserStatus(User user) {
+        user.canLogin();
     }
 
     private void logHistory(Long userId, EventType eventType, DataEvent dataEvent, Object data, String reason) {

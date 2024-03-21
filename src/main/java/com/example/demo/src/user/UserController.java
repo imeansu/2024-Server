@@ -3,7 +3,6 @@ package com.example.demo.src.user;
 
 import com.example.demo.common.exceptions.BaseException;
 import com.example.demo.common.response.BaseResponse;
-import com.example.demo.src.user.dto.OtpReqDto;
 import com.example.demo.src.user.entity.User;
 import com.example.demo.src.user.model.*;
 import com.example.demo.src.user.service.UserService;
@@ -17,7 +16,6 @@ import javax.validation.Valid;
 import java.util.List;
 
 import static com.example.demo.common.response.BaseResponseStatus.*;
-import static com.example.demo.utils.ValidationRegex.isRegexEmail;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,14 +38,7 @@ public class UserController {
     @ResponseBody
     @PostMapping("")
     public BaseResponse<PostUserRes> createUser(@Valid @RequestBody PostUserReq postUserReq) {
-        // TODO: email 관련한 짧은 validation 예시입니다. 그 외 더 부가적으로 추가해주세요!
-        if(postUserReq.getLoginId() == null){
-            return new BaseResponse<>(USERS_EMPTY_EMAIL);
-        }
-        //이메일 정규표현
-        if(!isRegexEmail(postUserReq.getLoginId())){
-//            return new BaseResponse<>(POST_USERS_INVALID_EMAIL);
-        }
+
         PostUserRes postUserRes = userService.createUser(postUserReq.toDto());
         return new BaseResponse<>(postUserRes);
     }
@@ -68,7 +59,7 @@ public class UserController {
             return new BaseResponse<>(getUsersRes);
         }
         // Get Users
-        List<GetUserRes> getUsersRes = userService.getUsersByEmail(loginId);
+        List<GetUserRes> getUsersRes = userService.getUsersByLoginId(loginId);
         return new BaseResponse<>(getUsersRes);
     }
 
@@ -143,7 +134,6 @@ public class UserController {
     @ResponseBody
     @PostMapping("/logIn")
     public BaseResponse<PostLoginRes> logIn(@RequestBody PostLoginReq postLoginReq){
-        // TODO: 유저의 status ex) 비활성화된 유저, 탈퇴한 유저 등을 관리해주고 있다면 해당 부분에 대한 validation 처리도 해주셔야합니다.
         PostLoginRes postLoginRes = userService.logIn(postLoginReq);
         return new BaseResponse<>(postLoginRes);
     }
@@ -156,9 +146,7 @@ public class UserController {
     @ResponseBody
     @PostMapping("/password/otp")
     public BaseResponse<String> createOtp(@RequestBody OtpReq otpReq, HttpServletRequest request){
-        User user = userService.getUserByPhoneNumberAndName(otpReq.getPhoneNumber(), otpReq.getName()).orElseThrow(
-                () -> new BaseException(NOT_FIND_USER)
-        );
+        User user = userService.getUserByPhoneNumberAndName(otpReq.getPhoneNumber(), otpReq.getName());
         OtpInfo otpInfo = userService.createOtp(otpReq.toDto(user.getId()));
         String result = "OTP 발송 완료!!";
         request.getSession().setAttribute("otpInfo", otpInfo);

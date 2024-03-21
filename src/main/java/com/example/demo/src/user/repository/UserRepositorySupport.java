@@ -1,6 +1,7 @@
 package com.example.demo.src.user.repository;
 
 import com.example.demo.common.Constant.UserStatus;
+import com.example.demo.common.entity.BaseEntity;
 import com.example.demo.src.user.entity.User;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.example.demo.common.entity.BaseEntity.State.ACTIVE;
 import static com.example.demo.src.user.entity.QUser.user;
 
 @Repository
@@ -44,6 +46,7 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
                 .and(eqName(name))
                 .and(eqLoginId(loginId))
                 .and(eqUserStatus(status))
+                .and(eqState(ACTIVE))
                 .and(datePredicate);
 
         List<User> users = queryFactory
@@ -66,8 +69,18 @@ public class UserRepositorySupport extends QuerydslRepositorySupport {
     public List<User> getLastLawNotifiedUsersBefore(LocalDateTime currentDateTime) {
         return queryFactory
                 .selectFrom(user)
-                .where(user.lastLawNotifiedAt.before(currentDateTime))
+                .where(user.lastLawNotifiedAt.before(currentDateTime),
+                        eqUserStatus(UserStatus.NORMAL),
+                        eqState(ACTIVE)
+                        )
                 .fetch();
+    }
+
+    private BooleanExpression eqState(BaseEntity.State state) {
+        if (state == null) {
+            return null;
+        }
+        return user.state.eq(state);
     }
 
     private BooleanExpression eqName(String name) {

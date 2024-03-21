@@ -89,6 +89,8 @@ public class User extends BaseEntity {
 
     public void deleteUser() {
         this.state = State.INACTIVE;
+        setUserStatus(UserStatus.DEACTIVATE);
+        clearUserStatus(UserStatus.NORMAL);
     }
 
     public void setUserStatus(UserStatus status) {

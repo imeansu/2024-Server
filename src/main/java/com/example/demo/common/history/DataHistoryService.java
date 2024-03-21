@@ -26,6 +26,7 @@ public class DataHistoryService {
     private final String DATA_HISTORY_COLLECTION_NAME = "data_history";
 
     public void save(DataHistory dataHistory) {
+
         mongoTemplate.save(dataHistory, DATA_HISTORY_COLLECTION_NAME);
     }
 

@@ -29,6 +29,7 @@ public class AdminService {
     public void restrictUser(Long userId, AdminRequest adminRequest) {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+        user.clearUserStatus(Constant.UserStatus.NORMAL);
         user.setUserStatus(Constant.UserStatus.RESTRICTED);
 
         dataHistoryService.save(DataHistory.builder()

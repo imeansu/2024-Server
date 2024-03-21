@@ -21,7 +21,7 @@ public enum BaseResponseStatus {
     USERS_EMPTY_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이메일을 입력해주세요."),
     TEST_EMPTY_COMMENT(false, HttpStatus.BAD_REQUEST.value(), "코멘트를 입력해주세요."),
     POST_USERS_INVALID_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이메일 형식을 확인해주세요."),
-    POST_USERS_EXISTS_LOGIN_ID(false,HttpStatus.BAD_REQUEST.value(),"중복된 이메일입니다."),
+    POST_USERS_EXISTS_LOGIN_ID(false,HttpStatus.BAD_REQUEST.value(),"중복된 아이디입니다."),
     POST_USERS_EXISTS_PHONE_NUMBER(false,HttpStatus.BAD_REQUEST.value(),"중복된 전화번호입니다."),
     POST_SOCIAL_LOGIN_USERS_EXISTS(false,HttpStatus.BAD_REQUEST.value(),"중복된 소셜 로그인 유저입니다."),
     POST_TEST_EXISTS_MEMO(false,HttpStatus.BAD_REQUEST.value(),"중복된 메모입니다."),

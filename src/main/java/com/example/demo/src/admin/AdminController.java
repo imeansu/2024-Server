@@ -6,6 +6,8 @@ import com.example.demo.common.request.PageDto;
 import com.example.demo.common.response.BaseResponse;
 import com.example.demo.src.admin.model.AdminRequest;
 import com.example.demo.src.admin.model.HistorySearchCriteria;
+import com.example.demo.src.user.entity.User;
+import com.example.demo.src.user.model.GetUserDetailRes;
 import com.example.demo.src.user.model.GetUserRes;
 import com.example.demo.src.user.model.UserSearchCriteria;
 import com.example.demo.src.user.service.UserService;
@@ -62,8 +64,21 @@ public class AdminController {
     @ResponseBody
     @GetMapping("/history/search")
     public BaseResponse<List<GetDataHistoryRes>> searchHistory(HistorySearchCriteria historySearchCriteria, PageDto pageDto) {
-        List<GetDataHistoryRes> dataHistories = dataHistoryService.searchHistory(historySearchCriteria, PageRequest.of(pageDto.getPage(), pageDto.getSize()));
-        return new BaseResponse<>(dataHistories);
+        List<GetDataHistoryRes> getDataHistoryRes = dataHistoryService.searchHistory(historySearchCriteria, PageRequest.of(pageDto.getPage(), pageDto.getSize()));
+        return new BaseResponse<>(getDataHistoryRes);
+    }
+
+    /**
+     * 회원 상세 조회 API
+     * [GET] /users/:userId
+     * @return BaseResponse<GetUserDetailRes>
+     */
+    // Path-variable
+    @ResponseBody
+    @GetMapping("/users/{userId}")
+    public BaseResponse<GetUserDetailRes> getUser(@PathVariable("userId") Long userId) {
+        GetUserDetailRes getUserDetailRes = userService.getUserDetail(userId);
+        return new BaseResponse<>(getUserDetailRes);
     }
 
 }
