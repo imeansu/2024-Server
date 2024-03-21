@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 public class ValidationRegex {
 
-    // TODO: 삭제 예정
     public static boolean isRegexEmail(String target) {
         String regex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$";
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);

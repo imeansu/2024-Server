@@ -61,7 +61,7 @@ public class UserService {
         // 정책 추가: PhoneNumber 중복 불가
         Optional<User> checkPhoneNumberUser = userRepository.findByPhoneNumberAndState(postUserDto.getPhoneNumber(), ACTIVE);
         if(checkPhoneNumberUser.isPresent()){
-            throw new BaseException(POST_USERS_EXISTS_LOGIN_ID);
+            throw new BaseException(POST_USERS_EXISTS_PHONE_NUMBER);
         }
 
         // 소셜 로그인 중복 체크
@@ -151,6 +151,13 @@ public class UserService {
         User user = userRepository.findByIdAndState(userId, ACTIVE)
                 .orElseThrow(() -> new BaseException(NOT_FIND_USER));
         return new GetUserRes(user);
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserDetailRes getUserDetail(Long userId) {
+        User user = userRepository.findByIdAndState(userId, ACTIVE)
+                .orElseThrow(() -> new BaseException(NOT_FIND_USER));
+        return new GetUserDetailRes(user);
     }
 
     @Transactional(readOnly = true)
