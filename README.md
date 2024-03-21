@@ -1,5 +1,5 @@
-# SpringBoot Template
-본 템플릿은 소프트스퀘어드 서버 교육용 Spring Boot 템플릿 입니다.
+# ERD
+![image](https://github.com/imeansu/2024-Server/assets/84117179/89d2b216-20e5-4fe7-bd49-6e4bc84397ed)
 
 ## ✨Common
 ### REST API
